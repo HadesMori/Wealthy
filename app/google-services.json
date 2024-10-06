@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "327574785126",
+    "project_id": "wealthy-70c4c",
+    "storage_bucket": "wealthy-70c4c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:327574785126:android:f62ff0605aa5fd70ceb1a7",
+        "android_client_info": {
+          "package_name": "com.hadesmori.wealthy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCb3UctQAQ3Uw8HJx0kDt0T3EK-AbvK9J0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
