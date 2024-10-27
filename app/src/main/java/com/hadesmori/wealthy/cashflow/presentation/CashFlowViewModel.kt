@@ -1,6 +1,5 @@
 package com.hadesmori.wealthy.cashflow.presentation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hadesmori.wealthy.cashflow.domain.model.Operation
@@ -12,11 +11,7 @@ import com.hadesmori.wealthy.cashflow.domain.usecase.GetProfile
 import com.hadesmori.wealthy.cashflow.domain.usecase.GetProfileCount
 import com.hadesmori.wealthy.cashflow.domain.usecase.InsertProfile
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,6 +31,7 @@ class CashFlowViewModel @Inject constructor(
 
     init {
         getProfileCount()
+        calculateAmounts()
     }
 
     //Profiles
@@ -77,5 +73,13 @@ class CashFlowViewModel @Inject constructor(
             operations.value = getOperationsFromProfile(profileId)
         }
         return operations.value
+    }
+
+    fun calculateAmounts() : Int {
+        var amountOfMoney = 0
+        for (operation in operations.value){
+            amountOfMoney += operation.amount
+        }
+        return amountOfMoney
     }
 }

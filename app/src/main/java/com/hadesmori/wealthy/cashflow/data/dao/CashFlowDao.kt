@@ -30,7 +30,6 @@ interface CashFlowDao {
     suspend fun getProfileCount() : Int
 
     //Operations
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addOperation(operation: OperationEntity)
 

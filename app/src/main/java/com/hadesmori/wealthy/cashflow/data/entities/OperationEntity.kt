@@ -28,6 +28,8 @@ data class OperationEntity(
 
     @ColumnInfo("label")
     val label: String,
+    @ColumnInfo("amount")
+    val amount: Int = 0,
     @ColumnInfo("description")
     val description: String,
     @ColumnInfo("type")
@@ -40,4 +42,4 @@ data class OperationEntity(
     val profileId: Long
 )
 
-fun Operation.toDatabase() = OperationEntity(label = label, description = description, type = type, date = date, icon = icon, profileId = profileId)
+fun Operation.toDatabase() = OperationEntity(label = label, amount = amount, description = description, type = type, date = date, icon = icon, profileId = profileId)

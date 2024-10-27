@@ -6,6 +6,7 @@ import java.time.LocalDate
 data class Operation(
     val id: Long?,
     val label: String = "",
+    val amount: Int = 0,
     val description: String = "",
     val type: OperationType,
     val date: LocalDate,
@@ -13,4 +14,4 @@ data class Operation(
     val profileId: Long
 )
 
-fun OperationEntity.toDomain() = Operation(operationId, label, description, type, date, icon, profileId)
+fun OperationEntity.toDomain() = Operation(operationId, label, amount, description, type, date, icon, profileId)
