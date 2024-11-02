@@ -7,4 +7,5 @@ plugins {
 
     alias(libs.plugins.googleServices) apply false
     alias(libs.plugins.crashlytics) apply false
+    alias(libs.plugins.jetbrainsKotlinSerialization) apply false
 }

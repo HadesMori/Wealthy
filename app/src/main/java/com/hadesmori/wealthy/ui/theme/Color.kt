@@ -14,3 +14,5 @@ val Primary = Color(0xFF292B3A)
 val Secondary = Color(0xFF786AFF)
 val SecondaryVariant = Color(0xFFC27FFF)
 val DarkerText = Color(0xFFB4B4B4)
+
+val HintText = Color(0xFFD9D9D9)
