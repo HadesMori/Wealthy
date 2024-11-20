@@ -88,8 +88,8 @@ class CashFlowViewModel @Inject constructor(
         return operations.value
     }
 
-    fun calculateAmounts() : Int {
-        var amountOfMoney = 0
+    fun calculateAmounts() : Float {
+        var amountOfMoney = 0f
         for (operation in operations.value){
             if(operation.type == OperationType.Income){
                 amountOfMoney += operation.amount

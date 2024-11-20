@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.hadesmori.wealthy.core.database.WealthyDatabase
 import com.hadesmori.wealthy.core.database.WealthyDatabase.Companion.MIGRATION_2_3
+import com.hadesmori.wealthy.core.database.WealthyDatabase.Companion.MIGRATION_3_4
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,6 +23,7 @@ object RoomModule {
     fun provideRoomDatabase(@ApplicationContext appContext: Context) =
         Room.databaseBuilder(appContext, WealthyDatabase::class.java, DATABASE_NAME)
             .addMigrations(MIGRATION_2_3)
+            .addMigrations(MIGRATION_3_4)
             .build()
 
     @Provides

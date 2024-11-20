@@ -52,6 +52,8 @@ import com.hadesmori.wealthy.ui.theme.Secondary
 import com.hadesmori.wealthy.ui.theme.SecondaryVariant
 import kotlinx.coroutines.flow.asStateFlow
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Formatter
 
 var currentProfileId: Long = 2
 
@@ -88,7 +90,6 @@ fun CashFlowScreen(
         }
 
         AddNewOperationButton(
-            viewModel,
             Modifier.align(Alignment.BottomEnd),
             navigateToAddNewOperation
         )
@@ -159,7 +160,7 @@ fun OperationList(operations: List<Operation>) {
             )
     ) {
         LazyColumn(Modifier.padding(vertical = 8.dp)) {
-            items(operations) {
+            items(operations.sortedByDescending { it.date }) {
                 OperationItem(operation = it)
             }
         }
@@ -171,33 +172,48 @@ fun OperationList(operations: List<Operation>) {
 //@Preview
 @Composable
 fun OperationItem(operation: Operation) {
-    //val operation: Operation = Operation(null, "title", "description", OperationType.Income, LocalDate.now(), 1, 2)
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .size(height = 60.dp, width = 330.dp)
             .background(color = Primary, shape = RoundedCornerShape(25.dp))
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_dollar),
-            contentDescription = "itemIcon",
-            Modifier
-                .padding(horizontal = 8.dp)
-                .size(48.dp),
-            colorFilter = ColorFilter.tint(Color.White),
-        )
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.Start) {
-            Text(text = operation.label, color = Color.White)
-            Text(text = operation.description, color = DarkerText)
+        Row{
+            Image(
+                painter = painterResource(id = R.drawable.ic_dollar),
+                contentDescription = "itemIcon",
+                Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(48.dp),
+                colorFilter = ColorFilter.tint(Color.White),
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.Start) {
+                Text(text = operation.label, color = Color.White)
+                Text(text = operation.description, color = DarkerText)
+            }
         }
+
+        //TODO
+        val signedAmount = when(operation.type){
+            OperationType.Income -> "+" + operation.amount.toString() + "$"
+            OperationType.Expense -> "-" + operation.amount.toString() + "$"
+            else -> operation.amount.toString() + "$"
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.Start, modifier = Modifier.size(width = 80.dp, height = 48.dp)) {
+            Text(text = signedAmount, color = Color.White)
+            Text(text = operation.date.format(DateTimeFormatter.ofPattern("dd-MM")), color = DarkerText)
+        }
+
+
     }
 }
 
 @Composable
 fun AddNewOperationButton(
-    viewModel: CashFlowViewModel,
     modifier: Modifier,
     navigateToAddNewOperation: () -> Unit
 ) {
@@ -217,13 +233,5 @@ fun nextProfile(viewModel: CashFlowViewModel) {
     } else {
         currentProfileId = 1
     }
-    viewModel.getProfileById(currentProfileId)
-}
-
-fun addNewOperation(viewModel: CashFlowViewModel) {
-    val newOperation =
-        Operation(null, "Lego", 10, "My favorite toy", OperationType.Income, LocalDate.now(), 1, 3)
-    viewModel.addNewOperation(newOperation)
-    viewModel.getOperations(currentProfileId)
     viewModel.getProfileById(currentProfileId)
 }

@@ -6,7 +6,7 @@ import java.time.LocalDate
 data class Operation(
     val id: Long?,
     val label: String = "",
-    val amount: Int = 0,
+    val amount: Float = 0f,
     val description: String = "",
     val type: OperationType,
     val date: LocalDate,

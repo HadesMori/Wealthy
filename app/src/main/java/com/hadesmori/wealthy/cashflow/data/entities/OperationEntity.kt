@@ -29,7 +29,7 @@ data class OperationEntity(
     @ColumnInfo("label")
     val label: String,
     @ColumnInfo("amount")
-    val amount: Int = 0,
+    val amount: Float = 0f,
     @ColumnInfo("description")
     val description: String,
     @ColumnInfo("type")

@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -44,6 +45,7 @@ import com.hadesmori.wealthy.cashflow.presentation.CashFlowViewModel
 import com.hadesmori.wealthy.cashflow.presentation.currentProfileId
 import com.hadesmori.wealthy.ui.theme.HintText
 import com.hadesmori.wealthy.ui.theme.SecondaryVariant
+import java.text.DecimalFormat
 import java.time.LocalDate
 
 @Composable
@@ -66,7 +68,7 @@ fun AddNewOperationScreen(
                 .fillMaxSize()
                 .background(SecondaryVariant)
         ) {
-            var selectedAmount by remember { mutableStateOf(0) }
+            var selectedAmount by remember { mutableStateOf(0f) }
             var selectedLabel by remember { mutableStateOf("") }
             var selectedDescription by remember { mutableStateOf("") }
             var selectedOperationType by remember { mutableStateOf(OperationType.Income) }
@@ -133,7 +135,7 @@ fun TopBar(popBackStack: () -> Unit) {
 
 @Composable
 fun ConfigurationsSection(
-    onAmountSelected: (Int) -> Unit,
+    onAmountSelected: (Float) -> Unit,
     onOperationLabelSelected: (String) -> Unit,
     onOperationDescriptionSelected: (String) -> Unit,
     onOperationTypeSelected: (OperationType) -> Unit,
@@ -150,7 +152,7 @@ fun ConfigurationsSection(
 
 @Composable
 fun AmountConfiguration(
-    onAmountSelected: (Int) -> Unit
+    onAmountSelected: (Float) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -165,19 +167,21 @@ fun AmountConfiguration(
                 .padding(start = 8.dp)
                 .size(24.dp)
         )
+        var text by remember { mutableStateOf(TextFieldValue("0")) }
 
-        // Amount of money
-        val amount = remember { mutableStateOf(0) }
         TextField(
-            value = amount.value.toString(),
-            onValueChange = {
-                if (it != "") {
-                    amount.value = it.toInt()
-
-                } else {
-                    amount.value = 0
+            value = text,
+            onValueChange = { input ->
+                // Validate input: Only allow digits and a single dot
+                val newText = input.text
+                if (newText.count { it == '.' } <= 1 && newText.all { it.isDigit() || it == '.' }) {
+                    text = input
+                    val parsedAmount = newText.toFloatOrNull() ?: 0f
+                    onAmountSelected(parsedAmount)
                 }
-                onAmountSelected(amount.value)
+            },
+            placeholder = {
+                Text("Amount", color = HintText)
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             colors = TextFieldDefaults.colors(
@@ -196,50 +200,54 @@ fun AmountConfiguration(
             )
         )
 
-        //Currency
-        var currencySymbol = remember { mutableStateOf("$") }
-        Text(
-            text = currencySymbol.value,
-            color = Color.White,
-            fontSize = 24.sp,
-            modifier = Modifier.padding(start = 16.dp)
+        CurrencyMenu()
+    }
+}
+
+@Composable
+fun CurrencyMenu() {
+    var currencySymbol = remember { mutableStateOf("$") }
+    Text(
+        text = currencySymbol.value,
+        color = Color.White,
+        fontSize = 24.sp,
+        modifier = Modifier.padding(start = 16.dp)
+    )
+
+    var isDropDownExpanded = remember {
+        mutableStateOf(false)
+    }
+
+    Button(
+        onClick = { isDropDownExpanded.value = true },
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+        contentPadding = PaddingValues(0.dp),
+        modifier = Modifier
+            .padding(start = 16.dp)
+            .size(24.dp)
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_dropdown_arrow),
+            contentDescription = "Currency",
+            Modifier.size(24.dp),
+            tint = Color.White
         )
+    }
 
-        var isDropDownExpanded = remember {
-            mutableStateOf(false)
+    // TODO: currency picker
+    val currencies = listOf("$", "€", "₴")
+    DropdownMenu(
+        expanded = isDropDownExpanded.value,
+        offset = DpOffset(240.dp, 0.dp),
+        onDismissRequest = {
+            isDropDownExpanded.value = false
         }
-
-        Button(
-            onClick = { isDropDownExpanded.value = true },
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier
-                .padding(start = 16.dp)
-                .size(24.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_dropdown_arrow),
-                contentDescription = "Currency",
-                Modifier.size(24.dp),
-                tint = Color.White
+    ) {
+        currencies.forEachIndexed { index, currency ->
+            DropdownMenuItem(
+                text = { Text(text = currency) },
+                onClick = { currencySymbol.value = currency }
             )
-        }
-
-        // TODO: currency picker
-        val currencies = listOf("$", "€", "₴")
-        DropdownMenu(
-            expanded = isDropDownExpanded.value,
-            offset = DpOffset(240.dp, 0.dp),
-            onDismissRequest = {
-                isDropDownExpanded.value = false
-            }
-        ) {
-            currencies.forEachIndexed { index, currency ->
-                DropdownMenuItem(
-                    text = { Text(text = currency) },
-                    onClick = { currencySymbol.value = currency }
-                )
-            }
         }
     }
 }
@@ -425,7 +433,7 @@ fun ChooseProfile(
 
 @Composable
 fun ConfirmationButton(
-    selectedAmount: Int,
+    selectedAmount: Float,
     selectedLabel: String,
     selectedDescription: String,
     selectedOperationType: OperationType,
@@ -435,19 +443,21 @@ fun ConfirmationButton(
 ) {
     Button(
         onClick = {
-            viewModel.addNewOperation(
-                Operation(
-                    null,
-                    selectedLabel,
-                    selectedAmount,
-                    selectedDescription,
-                    selectedOperationType,
-                    LocalDate.now(),
-                    1,
-                    selectedProfile.id!!
+            if(selectedLabel.isNotEmpty() && selectedAmount != 0f){
+                viewModel.addNewOperation(
+                    Operation(
+                        null,
+                        selectedLabel,
+                        selectedAmount,
+                        selectedDescription,
+                        selectedOperationType,
+                        LocalDate.now(),
+                        1,
+                        selectedProfile.id!!
+                    )
                 )
-            )
-            popBackStack()
+                popBackStack()
+            }
         }
     ) {
         Text(text = "Create operation")
