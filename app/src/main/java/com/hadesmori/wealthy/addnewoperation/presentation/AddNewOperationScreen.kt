@@ -47,6 +47,7 @@ import com.hadesmori.wealthy.ui.theme.HintText
 import com.hadesmori.wealthy.ui.theme.SecondaryVariant
 import java.text.DecimalFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Composable
 fun AddNewOperationScreen(
@@ -451,7 +452,7 @@ fun ConfirmationButton(
                         selectedAmount,
                         selectedDescription,
                         selectedOperationType,
-                        LocalDate.now(),
+                        LocalDateTime.now(),
                         1,
                         selectedProfile.id!!
                     )

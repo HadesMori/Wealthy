@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 import com.hadesmori.wealthy.cashflow.domain.model.Operation
 import com.hadesmori.wealthy.cashflow.domain.model.OperationType
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Date
 
 @Entity(
@@ -35,7 +36,7 @@ data class OperationEntity(
     @ColumnInfo("type")
     val type: OperationType,
     @ColumnInfo("date")
-    val date: LocalDate,
+    val date: LocalDateTime,
     @ColumnInfo("icon")
     val icon: Int,
     @ColumnInfo("profile_id")
