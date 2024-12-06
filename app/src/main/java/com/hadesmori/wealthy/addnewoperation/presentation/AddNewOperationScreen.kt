@@ -3,6 +3,7 @@ package com.hadesmori.wealthy.addnewoperation.presentation
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -45,8 +46,6 @@ import com.hadesmori.wealthy.cashflow.presentation.CashFlowViewModel
 import com.hadesmori.wealthy.cashflow.presentation.currentProfileId
 import com.hadesmori.wealthy.ui.theme.HintText
 import com.hadesmori.wealthy.ui.theme.SecondaryVariant
-import java.text.DecimalFormat
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Composable
@@ -64,16 +63,18 @@ fun AddNewOperationScreen(
 
     // Show loading UI until profile and allProfiles are loaded
     if (profileState != null && allProfilesState.isNotEmpty()) {
+
+        var selectedAmount by remember { mutableStateOf(0f) }
+        var selectedLabel by remember { mutableStateOf("") }
+        var selectedDescription by remember { mutableStateOf("") }
+        var selectedOperationType by remember { mutableStateOf(OperationType.Income) }
+        var selectedProfile by remember { mutableStateOf(profileState) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(SecondaryVariant)
         ) {
-            var selectedAmount by remember { mutableStateOf(0f) }
-            var selectedLabel by remember { mutableStateOf("") }
-            var selectedDescription by remember { mutableStateOf("") }
-            var selectedOperationType by remember { mutableStateOf(OperationType.Income) }
-            var selectedProfile by remember { mutableStateOf(profileState) }
             TopBar(popBackStack)
             ConfigurationsSection(
                 onAmountSelected = { selectedAmount = it },
@@ -84,6 +85,12 @@ fun AddNewOperationScreen(
                 profileState,
                 allProfilesState
             )
+        }
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        )
+        {
             ConfirmationButton(
                 selectedAmount,
                 selectedLabel,

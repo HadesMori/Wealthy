@@ -7,6 +7,7 @@ import com.hadesmori.wealthy.cashflow.domain.model.Operation
 import com.hadesmori.wealthy.cashflow.domain.model.OperationType
 import com.hadesmori.wealthy.cashflow.domain.model.Profile
 import com.hadesmori.wealthy.cashflow.domain.usecase.AddOperation
+import com.hadesmori.wealthy.cashflow.domain.usecase.DeleteOperation
 import com.hadesmori.wealthy.cashflow.domain.usecase.DeleteProfile
 import com.hadesmori.wealthy.cashflow.domain.usecase.GetOperationsFromProfile
 import com.hadesmori.wealthy.cashflow.domain.usecase.GetProfile
@@ -24,14 +25,15 @@ class CashFlowViewModel @Inject constructor(
     private val getProfiles: GetProfiles,
     private val insertProfile: InsertProfile,
     private val deleteProfile: DeleteProfile,
+    private val getProfileCountCase: GetProfileCount,
     private val addOperation: AddOperation,
     private val getOperationsFromProfile: GetOperationsFromProfile,
-    private val getProfileCountCase: GetProfileCount
+    private val deleteOperation: DeleteOperation
 ) : ViewModel(){
 
-    val profile = MutableStateFlow<Profile>(Profile(null, ""))
-    val profiles = MutableStateFlow<List<Profile>>(emptyList<Profile>())
-    val profileCount = MutableStateFlow<Int>(0)
+    val profile = MutableStateFlow(Profile(null, ""))
+    val profiles = MutableStateFlow(emptyList<Profile>())
+    val profileCount = MutableStateFlow(0)
     val operations = MutableStateFlow<List<Operation>>(emptyList())
 
     init {
@@ -99,5 +101,11 @@ class CashFlowViewModel @Inject constructor(
             }
         }
         return amountOfMoney
+    }
+
+    fun removeOperationById(operationId: Long?) {
+        viewModelScope.launch {
+            deleteOperation(operationId)
+        }
     }
 }

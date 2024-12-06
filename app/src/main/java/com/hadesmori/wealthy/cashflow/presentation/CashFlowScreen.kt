@@ -1,12 +1,12 @@
 package com.hadesmori.wealthy.cashflow.presentation
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,26 +19,25 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,10 +49,7 @@ import com.hadesmori.wealthy.ui.theme.DarkerText
 import com.hadesmori.wealthy.ui.theme.Primary
 import com.hadesmori.wealthy.ui.theme.Secondary
 import com.hadesmori.wealthy.ui.theme.SecondaryVariant
-import kotlinx.coroutines.flow.asStateFlow
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Formatter
 
 var currentProfileId: Long = 2
 
@@ -84,7 +80,7 @@ fun CashFlowScreen(
                 updateUI(viewModel)
             }
 
-            OperationList(operations)
+            OperationList(operations, viewModel)
 
             Spacer(modifier = Modifier.weight(2f))
         }
@@ -146,7 +142,7 @@ fun Profile(viewModel: CashFlowViewModel, profile: Profile) {
 }
 
 @Composable
-fun OperationList(operations: List<Operation>) {
+fun OperationList(operations: List<Operation>, viewModel: CashFlowViewModel) {
     val colorStops = arrayOf(
         0.0f to SecondaryVariant,
         1.0f to Secondary
@@ -161,17 +157,20 @@ fun OperationList(operations: List<Operation>) {
     ) {
         LazyColumn(Modifier.padding(vertical = 8.dp)) {
             items(operations.sortedByDescending { it.date }) {
-                OperationItem(operation = it)
+                OperationItem(operation = it, viewModel = viewModel)
             }
         }
     }
 }
 
-
 //operation: Operation
 //@Preview
 @Composable
-fun OperationItem(operation: Operation) {
+fun OperationItem(operation: Operation, viewModel: CashFlowViewModel) {
+    val shouldShowDialog = remember { mutableStateOf(false) }
+
+    DeleteOperationAlertDialog(shouldShowDialog, viewModel, operation)
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -180,6 +179,13 @@ fun OperationItem(operation: Operation) {
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .size(height = 60.dp, width = 330.dp)
             .background(color = Primary, shape = RoundedCornerShape(25.dp))
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        shouldShowDialog.value = true
+                    }
+                )
+            }
     ) {
         Row{
             Image(
@@ -192,7 +198,14 @@ fun OperationItem(operation: Operation) {
             )
             Column(verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.Start) {
                 Text(text = operation.label, color = Color.White)
-                Text(text = operation.description, color = DarkerText)
+                Text(text = if(operation.description.isNotEmpty()){
+                    operation.description
+                }
+                    else
+                {
+                    stringResource(R.string.empty_operation_description_text)
+                }
+                    , color = DarkerText)
             }
         }
 
@@ -207,8 +220,6 @@ fun OperationItem(operation: Operation) {
             Text(text = signedAmount, color = Color.White)
             Text(text = operation.date.format(DateTimeFormatter.ofPattern("dd-MM")), color = DarkerText)
         }
-
-
     }
 }
 
@@ -220,18 +231,54 @@ fun AddNewOperationButton(
     Button(
         onClick = {
             navigateToAddNewOperation()
-        }, modifier = modifier.padding(16.dp)
+        },
+        modifier = modifier.padding(16.dp).size(50.dp),
+        contentPadding = PaddingValues(0.dp),
+        shape = CircleShape,
+        colors = ButtonDefaults.buttonColors(containerColor = Primary)
     )
     {
-        Text(text = "+")
+        Image(painterResource(R.drawable.ic_add), contentDescription = "Add operation")
     }
 }
 
-fun nextProfile(viewModel: CashFlowViewModel) {
-    if (currentProfileId < viewModel.profileCount.value) {
-        currentProfileId += 1
-    } else {
-        currentProfileId = 1
+@Composable
+fun DeleteOperationAlertDialog(shouldShowDialog: MutableState<Boolean>, viewModel: CashFlowViewModel, operation: Operation) {
+    if (shouldShowDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                shouldShowDialog.value = false
+            },
+            title = { Text(text = stringResource(R.string.alert_dialog_delete_operation_title)) },
+            text = { Text(text = stringResource(R.string.alert_dialog_delete_operation_text)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        shouldShowDialog.value = false
+                        viewModel.removeOperationById(operation.id)
+                        updateUI(viewModel)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text(
+                        text = "Confirm",
+                        color = Color.White
+                    )
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        shouldShowDialog.value = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text(
+                        text = "Dismiss",
+                        color = Color.White
+                    )
+                }
+            }
+        )
     }
-    viewModel.getProfileById(currentProfileId)
 }

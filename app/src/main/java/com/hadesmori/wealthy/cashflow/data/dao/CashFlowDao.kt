@@ -35,4 +35,7 @@ interface CashFlowDao {
 
     @Query("SELECT * FROM operation_table WHERE profile_id = :profileId")
     suspend fun getOperationsFromProfile(profileId: Long) : List<OperationEntity>
+
+    @Query("DELETE FROM operation_table WHERE operation_id = :operationId")
+    suspend fun deleteOperation(operationId: Long)
 }

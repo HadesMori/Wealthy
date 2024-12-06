@@ -18,4 +18,11 @@ class OperationsRepositoryImplementation @Inject constructor(
     override suspend fun getOperationsFromProfile(profileId: Long) : List<Operation>{
         return cashFlowDao.getOperationsFromProfile(profileId).map { it.toDomain() }
     }
+
+    override suspend fun deleteOperation(operationId: Long?) {
+        if(operationId != null)
+        {
+            cashFlowDao.deleteOperation(operationId)
+        }
+    }
 }
